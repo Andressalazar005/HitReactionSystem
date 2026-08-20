@@ -20,7 +20,8 @@ jobs:
           import base64, shutil, zipfile
           from pathlib import Path
           root = 'HitReactionSystem'
-          raw = base64.b64decode(Path('.import/project.b64').read_text().strip())
+          encoded = ''.join(p.read_text().strip() for p in sorted(Path('.import').glob('part*.b64')))
+          raw = base64.b64decode(encoded)
           zpath = Path('/tmp/project.zip')
           zpath.write_bytes(raw)
           unpack = Path('/tmp/project')
