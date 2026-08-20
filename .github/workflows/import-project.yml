@@ -1,10 +1,9 @@
 name: Import cleaned project
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/import-project.yml'
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -38,6 +37,11 @@ jobs:
               if child.is_dir(): shutil.copytree(child, dst, dirs_exist_ok=True)
               else: shutil.copy2(child, dst)
           shutil.rmtree('.import', ignore_errors=True)
+          Path('.github/workflows/import-project.yml').unlink(missing_ok=True)
+          try: Path('.github/workflows').rmdir()
+          except OSError: pass
+          try: Path('.github').rmdir()
+          except OSError: pass
           PY
       - name: Commit imported project
         run: |
