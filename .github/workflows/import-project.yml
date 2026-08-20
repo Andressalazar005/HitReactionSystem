@@ -1,20 +1,22 @@
 name: Import cleaned project
 
 on:
-  issues:
+  pull_request_target:
     types: [opened]
   workflow_dispatch:
 
 permissions:
   contents: write
-  issues: write
+  pull-requests: write
 
 jobs:
   import:
-    if: github.event_name == 'workflow_dispatch' || github.event.issue.title == 'IMPORT_SOURCE_ONCE'
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.title == 'IMPORT_SOURCE_ONCE'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Import cleaned project archive
         run: |
           python - <<'PY'
@@ -51,9 +53,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --quiet || git commit -m "Import HitReactionSystem source"
-          git push
-      - name: Close trigger issue
-        if: github.event_name == 'issues'
+          git push origin HEAD:main
+      - name: Close trigger pull request
+        if: github.event_name == 'pull_request_target'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue close "${{ github.event.issue.number }}" --reason completed
+        run: gh pr close "${{ github.event.pull_request.number }}" --delete-branch
